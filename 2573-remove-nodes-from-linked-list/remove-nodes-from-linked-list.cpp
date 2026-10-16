@@ -8,38 +8,41 @@
  *     ListNode(int x, ListNode *next) : val(x), next(next) {}
  * };
  */
-#pragma GCC optimize("O3", "unroll-loops")
 class Solution {
 public:
-    ListNode* removeNodes(ListNode* head) {
-        vector<int> stack;
-        ListNode dummy=ListNode();
-        ListNode* tail=&dummy; //Maintain a pointer to the tail 
-        ListNode* ptr=NULL;
-        for (ListNode* curr=head; curr; curr = curr->next, delete ptr) {
-            int x = curr->val;
-            ListNode* ptr=curr;
-            
-            // Monotonic increasing stack
-            while (!stack.empty() && (stack.back()<x))
-                stack.pop_back();
-            stack.push_back(x);
+    ListNode* reverseLinkedList(ListNode* head) {
+        ListNode* curr = head;
+        ListNode* prev = NULL;
+        ListNode* ahead = NULL;
+        while (curr != NULL) {
+            ahead = curr->next;
+            curr->next = prev;
+            prev = curr;
+            curr = ahead;
         }
-        // Add remaining elements from stack
-        for (int val : stack) {
-            tail->next = new ListNode(val, NULL);
-            tail=tail->next;
+        return prev;
+    }
+    ListNode* removeNodes(ListNode* head) {
+        // Reverse Linked List
+
+        head = reverseLinkedList(head);
+
+        // Now remove every Node Smaller than current Node
+
+        ListNode* curr = head;
+        while (curr->next) {
+
+            if (curr->next->val < curr->val) {
+                curr->next = curr->next->next;
+            } else
+                curr = curr->next;
         }
 
-        return dummy.next;
+        // Reverse the linked list again
+        head = reverseLinkedList(head);
+
+        // Return  the modified linked list
+
+        return head;
     }
 };
-
-
-
-auto init = []() {
-    ios::sync_with_stdio(0);
-    cin.tie(0);
-    cout.tie(0);
-    return 'c';
-}();
