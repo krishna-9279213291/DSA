@@ -1,36 +1,66 @@
 class Solution {
 public:
-    bool exist(vector<vector<char>>& board, string word) {
-        int m = board.size();
-        int n = board[0].size();
-        
-        function<bool(int, int, int)> backtrack = [&](int i, int j, int k) {
-            if (k == word.length()) {
-                return true;
-            }
-            if (i < 0 || i >= m || j < 0 || j >= n || board[i][j] != word[k]) {
-                return false;
-            }
-            
-            char temp = board[i][j];
-            board[i][j] = '\0';
-            
-            if (backtrack(i + 1, j, k + 1) || backtrack(i - 1, j, k + 1) || 
-                backtrack(i, j + 1, k + 1) || backtrack(i, j - 1, k + 1)) {
-                return true;
-            }
-            
-            board[i][j] = temp; 
+    int m, n;
+    
+    bool dfs(vector<vector<char>>& board, string& word,
+             int i, int j, int idx) {
+
+        // Word completely matched
+        if (idx == word.size())
+            return true;
+
+        // Boundary check and character matching
+        if (i < 0 || j < 0 || i >= m || j >= n ||
+            board[i][j] != word[idx])
             return false;
-        };
-        
-        for (int i = 0; i < m; ++i) {
-            for (int j = 0; j < n; ++j) {
-                if (backtrack(i, j, 0)) {
+
+        // Mark current cell as visited
+        char temp = board[i][j];
+        board[i][j] = '#';
+
+        // Explore all 4 directions
+        bool found = dfs(board, word, i + 1, j, idx + 1) ||
+                     dfs(board, word, i - 1, j, idx + 1) ||
+                     dfs(board, word, i, j + 1, idx + 1) ||
+                     dfs(board, word, i, j - 1, idx + 1);
+
+        // Backtrack: Restore original character
+        board[i][j] = temp;
+
+        return found;
+    }
+
+    bool exist(vector<vector<char>>& board, string word) {
+        m = board.size();
+        n = board[0].size();
+
+        // Search pruning: Check character frequencies
+        int freq[128] = {0};
+
+        for (auto& row : board) {
+            for (char c : row)
+                freq[(unsigned char)c]++;
+        }
+
+        int required[128] = {0};
+
+        for (char c : word) {
+            required[(unsigned char)c]++;
+        }
+
+        for (int i = 0; i < 128; i++) {
+            if (required[i] > freq[i])
+                return false;
+        }
+
+        // Start DFS from every cell
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (dfs(board, word, i, j, 0))
                     return true;
-                }
             }
         }
+
         return false;
     }
 };
